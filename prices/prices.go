@@ -1,34 +1,27 @@
 package prices
 
 import "fmt"
-import "os"
+//import "os"
 //import "strconv"
-import "strings"
+//mport "strings"
 import "SalaryCalcGolang/conver"
+import "SalaryCalcGolang/manageFile"
 
 type TaxJob struct{
 	TaxRate float64
 	InputPrice []float64
-	TaxIncludedPrices map[string]float64
+	TaxIncludedPrices map[string]string
 }
 
 
 func (job *TaxJob) LoadData() {
-	read, err := os.ReadFile("prices/price.txt")
-	//fmt.Println(read)
-	if err != nil{
-		fmt.Println("readerror")
-		return 
-	}
-	readStr := string(read)
-	arrStr := strings.Split(readStr, "\n")
-	//fmt.Println(arrStr)
-	
-	job.InputPrice, err = conver.Conver(arrStr)
+	arrStr, err := manageFile.ReadMyFile("price.txt")
+	resFloat, err := conver.Conver(arrStr)
 	if err != nil{
 		fmt.Println(err)
 		return
 	}
+	job.InputPrice = resFloat
 	// TaxJob{
 		// 	//TaxRate: taxeRate,
 		// 	InputPrice: readFloat,
@@ -46,6 +39,8 @@ func (job *TaxJob) LoadData() {
 			result[fmt.Sprintf("%.2f", price)] = resString
 		}
 		fmt.Println(result)
+		job.TaxIncludedPrices = result
+		manageFile.WriteJson(fmt.Sprintf("result_%.0f.json", job.TaxRate*100), job )
 	}
 	
 	func NewTaxIncludedPriceJob(taxeRate float64) *TaxJob {
