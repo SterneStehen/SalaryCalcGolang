@@ -7,8 +7,15 @@ import "errors"
 import "encoding/json"
 
 
-func ReadMyFile(path string) ([]string, error){
-	read, err := os.ReadFile(path)
+type FileManagePath struct{
+	InputPath string
+	OutputPath string
+}
+
+
+
+func(fm FileManagePath) ReadMyFile() ([]string, error){
+	read, err := os.ReadFile(fm.InputPath)
 	//fmt.Println(read)
 	if err != nil{
 		return nil, errors.New("Read File failed")
@@ -20,8 +27,8 @@ func ReadMyFile(path string) ([]string, error){
 	return arrStr, nil
 }
 
-func WriteJson(path string, data interface{}) error{
-	file, err := os.Create(path)
+func (fm FileManagePath) WriteJson(data interface{}) error{
+	file, err := os.Create(fm.OutputPath)
 	if err != nil{
 		return  errors.New("Create File failed")
 	}
@@ -33,4 +40,14 @@ func WriteJson(path string, data interface{}) error{
 	}
 	file.Close()
 	return nil
+}
+
+func NewPath(input string, output string) FileManagePath  {
+	
+	return FileManagePath{	
+	InputPath: input,
+	OutputPath: output,
+	}
+		
+
 }

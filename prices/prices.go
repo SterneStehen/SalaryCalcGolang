@@ -6,16 +6,18 @@ import "fmt"
 //mport "strings"
 import "SalaryCalcGolang/conver"
 import "SalaryCalcGolang/manageFile"
+//import "time"
 
 type TaxJob struct{
-	TaxRate float64
-	InputPrice []float64
-	TaxIncludedPrices map[string]string
+	PathFile manageFile.FileManagePath	`json:"-"`
+	TaxRate float64 					`json:"tax_rate"`
+	InputPrice []float64 				`json:"input_price"`
+	TaxIncludedPrices map[string]string `json:"tax_included_price"`
 }
 
 
 func (job *TaxJob) LoadData() {
-	arrStr, err := manageFile.ReadMyFile("price.txt")
+	arrStr, err := job.PathFile.ReadMyFile()
 	resFloat, err := conver.Conver(arrStr)
 	if err != nil{
 		fmt.Println(err)
@@ -31,7 +33,7 @@ func (job *TaxJob) LoadData() {
 	}
 
 
-	func (job *TaxJob) Process(){
+	func (job *TaxJob) Process(done chan bool){
 		job.LoadData()
 		result := make(map[string]string)
 		for _, price := range job.InputPrice{
@@ -40,10 +42,13 @@ func (job *TaxJob) LoadData() {
 		}
 		fmt.Println(result)
 		job.TaxIncludedPrices = result
-		manageFile.WriteJson(fmt.Sprintf("result_%.0f.json", job.TaxRate*100), job )
+		//manageFile.WriteJson(fmt.Sprintf("result_%.0f.json", job.TaxRate*100), job )
+		job.PathFile.WriteJson(job)
+		//time.Sleep(time.Second *10)
+		done <- true
 	}
 	
-	func NewTaxIncludedPriceJob(taxeRate float64) *TaxJob {
+	func NewTaxIncludedPriceJob(fm manageFile.FileManagePath, taxeRate float64) *TaxJob {
 		
 		
 		
@@ -53,7 +58,8 @@ func (job *TaxJob) LoadData() {
 			// }
 			
 			return &TaxJob{
-	TaxRate: taxeRate,
+			PathFile: fm,
+			TaxRate: taxeRate,
 	//InputPrice: readFloat,
 	//InputPrice: []float64{10, 20, 30},
 	}
