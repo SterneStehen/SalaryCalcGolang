@@ -7,6 +7,7 @@ import "fmt"
 import "SalaryCalcGolang/conver"
 import "SalaryCalcGolang/manageFile"
 //import "time"
+import "errors"
 
 type TaxJob struct{
 	PathFile manageFile.FileManagePath	`json:"-"`
@@ -16,12 +17,12 @@ type TaxJob struct{
 }
 
 
-func (job *TaxJob) LoadData() {
+func (job *TaxJob) LoadData() (error){
 	arrStr, err := job.PathFile.ReadMyFile()
 	resFloat, err := conver.Conver(arrStr)
 	if err != nil{
 		fmt.Println(err)
-		return
+		return errors.New("failed Convert")
 	}
 	job.InputPrice = resFloat
 	// TaxJob{
@@ -29,12 +30,17 @@ func (job *TaxJob) LoadData() {
 		// 	InputPrice: readFloat,
 		// 	//InputPrice: []float64{10, 20, 30},
 		// 	}
-		
+	return nil
 	}
 
 
-	func (job *TaxJob) Process(done chan bool){
-		job.LoadData()
+	func (job *TaxJob) Process(done chan bool, errChan chan error) {
+		err := job.LoadData()
+		if err != nil{
+			fmt.Println(err)
+			errChan <- err 
+			return
+		}
 		result := make(map[string]string)
 		for _, price := range job.InputPrice{
 			resString := fmt.Sprintf("%.2f", price * (1 + job.TaxRate))
